@@ -1,33 +1,14 @@
-terraform {
-  required_version = "~> 1.8.4"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.21"
-    }
-  }
-
-  backend "s3" {
-    bucket = "demo512"
-    key    = "terraform/snapshot/state.tfstate"
-    region = "us-east-1"
-  }
-}
-
-provider "aws" {
-  profile = "default"
-  region  = "us-east-1"
-}
-
-provider "aws" {
-  alias   = "aws_lab"
-  region  = "us-east-2"
-}
-
 # Data source to get all EC2 instances in the specified region
 data "aws_instances" "all_instances" {
   provider = aws.aws_lab
+
+  # Filter to include all instances (active ones)
+  filters = [
+    {
+      name   = "instance-state-name"
+      values = ["running", "stopped"] # Include running and stopped instances
+    }
+  ]
 }
 
 # Iterate over each instance and get details about the instance
